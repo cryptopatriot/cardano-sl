@@ -135,7 +135,7 @@ newtype AccountName = AccountName { getAccountName :: Text }
 
 -- | Account index
 newtype HdAccountIx = HdAccountIx { getHdAccountIx :: Word32 }
-  deriving (Generic, Eq, Ord)
+  deriving (Generic, Eq, Ord, Show)
 
 instance ToJSON HdAccountIx where
     toJSON = genericToJSON Aeson.defaultOptions
@@ -150,7 +150,7 @@ instance Arbitrary HdAccountIx where
 
 -- | Address index
 newtype HdAddressIx = HdAddressIx { getHdAddressIx :: Word32 }
-  deriving (Generic, Eq, Ord)
+  deriving (Generic, Eq, Ord, Show)
 
 instance Aeson.ToJSON HdAddressIx where
     toJSON = Aeson.genericToJSON Aeson.defaultOptions
@@ -227,7 +227,7 @@ eskToHdRootId = HdRootId . InDb . Core.makePubKeyAddressBoot . Core.encToPublic
 -- as a primary key. This however is a slightly larger refactoring we don't
 -- currently have time for.
 newtype HdRootId = HdRootId { getHdRootId :: InDb Core.Address }
-  deriving (Generic, Eq, Ord)
+  deriving (Generic, Eq, Ord, Show)
 
 instance Arbitrary HdRootId where
   arbitrary = do
@@ -246,7 +246,7 @@ data HdAccountId = HdAccountId {
       _hdAccountIdParent :: !HdRootId
     , _hdAccountIdIx     :: !HdAccountIx
     }
-  deriving (Generic, Eq)
+  deriving (Generic, Eq, Show)
 
 -- | We make sure to compare the account index first to avoid doing an
 -- unnecessary comparison of the root ID
@@ -482,7 +482,7 @@ hdAccountStateCurrent f (HdAccountStateIncomplete st) =
 data UnknownHdRoot =
     -- | Unknown root ID
     UnknownHdRoot HdRootId
-    deriving (Generic, Eq)
+    deriving (Generic, Eq, Show)
 
 instance Aeson.ToJSON (V1 UnknownHdRoot) where
     toJSON = Aeson.genericToJSON Aeson.defaultOptions . unV1
@@ -507,7 +507,7 @@ data UnknownHdAccount =
 
     -- | Unknown account (implies the root is known)
   | UnknownHdAccount HdAccountId
-  deriving (Generic, Eq)
+  deriving (Generic, Eq, Show)
 
 
 instance Arbitrary UnknownHdAccount where
