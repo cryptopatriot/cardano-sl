@@ -9,15 +9,16 @@ module Cardano.Wallet.WalletLayer.QuickCheck
 import           Universum
 
 import           Cardano.Wallet.Kernel.Diffusion (WalletDiffusion (..))
+import qualified Cardano.Wallet.Kernel.Transactions ()
 import           Cardano.Wallet.Orphans.Arbitrary ()
 import           Cardano.Wallet.WalletLayer (ActiveWalletLayer (..),
                      CreateAccountError (..), DeleteAccountError (..),
                      DeleteWalletError (..), GetAccountError (..),
                      GetAccountsError (..), GetUtxosError (..),
                      GetWalletError (..), ImportWalletError (..),
-                     PassiveWalletLayer (..), UpdateAccountError (..),
-                     UpdateWalletError (..), UpdateWalletPasswordError (..),
-                     ValidateAddressError (..))
+                     PassiveWalletLayer (..), RedeemAdaError (..),
+                     UpdateAccountError (..), UpdateWalletError (..),
+                     UpdateWalletPasswordError (..), ValidateAddressError (..))
 
 import           Cardano.Wallet.API.V1.Types (V1 (..))
 
@@ -162,4 +163,10 @@ instance Arbitrary ImportWalletError where
     arbitrary = oneof [ ImportWalletFileNotFound <$> arbitrary
                       , ImportWalletNoWalletFoundInBackup <$> arbitrary
                       , ImportWalletCreationFailed <$> arbitrary
+                      ]
+
+instance Arbitrary RedeemAdaError where
+    arbitrary = oneof [ RedeemAdaError <$> arbitrary
+                      , pure (RedeemAdaWalletIdDecodingFailed "foobar")
+                      , RedeemAdaInvalidRedemptionCode <$> arbitrary
                       ]
