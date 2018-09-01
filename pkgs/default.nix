@@ -17370,6 +17370,7 @@ license = stdenv.lib.licenses.mit;
 , log-warper
 , lrucache
 , megaparsec
+, mmorph
 , mtl
 , optparse-applicative
 , parsec
@@ -17430,6 +17431,7 @@ lens
 log-warper
 lrucache
 megaparsec
+mmorph
 mtl
 optparse-applicative
 parsec
