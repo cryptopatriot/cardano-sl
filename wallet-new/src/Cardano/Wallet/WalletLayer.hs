@@ -92,8 +92,8 @@ deriveGeneric ''CreateWalletError
 
 instance HasDiagnostic CreateWalletError where
     getDiagnosticKey = \case
-        CreateWalletError _ -> "TODO"
-        CreateWalletFirstAccountCreationFailed _ -> "TODO"
+        CreateWalletError _ -> "createWalletError"
+        CreateWalletFirstAccountCreationFailed _ -> "createAccountError"
 
 instance ToServantError CreateWalletError where
     declareServantError = \case
@@ -141,7 +141,7 @@ instance HasDiagnostic GetWalletError where
 instance ToServantError GetWalletError where
     declareServantError = \case
         GetWalletError _ -> err400 -- FIXME: Is this correct?
-        GetWalletErrorNotFound _ -> err400 -- FIXME: Is this correct?
+        GetWalletErrorNotFound _ -> err404
         GetWalletWalletIdDecodingFailed _ -> err400 -- FIXME: Is this correct?
 
 instance ToHttpErrorStatus GetWalletError
@@ -435,9 +435,9 @@ deriveGeneric ''CreateAccountError
 
 instance HasDiagnostic CreateAccountError where
     getDiagnosticKey = \case
-        CreateAccountError _ -> "TODO"
-        CreateAccountWalletIdDecodingFailed _ -> "TODO"
-        CreateAccountFirstAddressGenerationFailed _ -> "TODO"
+        CreateAccountError _ -> "reason"
+        CreateAccountWalletIdDecodingFailed _ -> "message"
+        CreateAccountFirstAddressGenerationFailed _ -> "firstAddressGenerationFailed"
 
 instance ToServantError CreateAccountError where
     declareServantError = \case
@@ -479,13 +479,13 @@ deriveGeneric ''GetAccountError
 
 instance HasDiagnostic GetAccountError where
     getDiagnosticKey = \case
-        GetAccountError _ -> "TODO"
-        GetAccountWalletIdDecodingFailed _ -> "TODO"
+        GetAccountError _ -> "unknownAccount"
+        GetAccountWalletIdDecodingFailed _ -> "message"
 
 instance ToServantError GetAccountError where
     declareServantError = \case
-        GetAccountError _ -> err400 -- FIXME: Is this correct?
-        GetAccountWalletIdDecodingFailed _ -> err400 -- FIXME: Is this correct?
+        GetAccountError _ -> err404
+        GetAccountWalletIdDecodingFailed _ -> err400
 
 instance ToHttpErrorStatus GetAccountError
 
@@ -559,8 +559,8 @@ deriveGeneric ''GetAccountsError
 
 instance HasDiagnostic GetAccountsError where
     getDiagnosticKey = \case
-        GetAccountsError _                  -> "TODO"
-        GetAccountsWalletIdDecodingFailed _ -> "TODO"
+        GetAccountsError _                  -> "unknownHdRoot"
+        GetAccountsWalletIdDecodingFailed _ -> "message"
 
 instance ToServantError GetAccountsError where
     declareServantError = \case
@@ -692,17 +692,17 @@ deriveGeneric ''GetTxError
 
 instance HasDiagnostic GetTxError where
     getDiagnosticKey = \case
-        GetTxMissingWalletIdError -> "TODO"
-        GetTxAddressDecodingFailed _ -> "TODO"
-        GetTxInvalidSortingOperaration _ -> "TODO"
-        GetTxUnknownHdAccount _ -> "TODO"
+        GetTxMissingWalletIdError -> "missingWalletId"
+        GetTxAddressDecodingFailed _ -> "message"
+        GetTxInvalidSortingOperaration _ -> "invalidSortingOperation"
+        GetTxUnknownHdAccount _ -> "unknownAccount"
 
 instance ToServantError GetTxError where
     declareServantError = \case
-        GetTxMissingWalletIdError -> err400 -- FIXME: Is this correct?
-        GetTxAddressDecodingFailed _ -> err400 -- FIXME: Is this correct?
-        GetTxInvalidSortingOperaration _ -> err400 -- FIXME: Is this correct?
-        GetTxUnknownHdAccount _ -> err400 -- FIXME: Is this correct?
+        GetTxMissingWalletIdError -> err400
+        GetTxAddressDecodingFailed _ -> err400
+        GetTxInvalidSortingOperaration _ -> err400
+        GetTxUnknownHdAccount _ -> err404
 
 instance ToHttpErrorStatus GetTxError
 
@@ -749,17 +749,17 @@ deriveGeneric ''NewPaymentError
 
 instance HasDiagnostic NewPaymentError where
     getDiagnosticKey = \case
-        NewPaymentError _ -> "TODO"
-        NewPaymentTimeLimitReached _ -> "TODO"
-        NewPaymentWalletIdDecodingFailed _ -> "TODO"
-        NewPaymentUnknownAccountId _ -> "TODO"
+        NewPaymentError _ -> "message"
+        NewPaymentTimeLimitReached _ -> "timeLimitReached"
+        NewPaymentWalletIdDecodingFailed _ -> "message"
+        NewPaymentUnknownAccountId _ -> "unknownAccountId"
 
 instance ToServantError NewPaymentError where
     declareServantError = \case
-        NewPaymentError _ -> err400 -- FIXME: Is this correct?
-        NewPaymentTimeLimitReached _ -> err400 -- FIXME: Is this correct?
-        NewPaymentWalletIdDecodingFailed _ -> err400 -- FIXME: Is this correct?
-        NewPaymentUnknownAccountId _ -> err400 -- FIXME: Is this correct?
+        NewPaymentError _ -> err400
+        NewPaymentTimeLimitReached _ -> err400 -- FIXME: Timeout? 408?
+        NewPaymentWalletIdDecodingFailed _ -> err400
+        NewPaymentUnknownAccountId _ -> err404
 
 instance ToHttpErrorStatus NewPaymentError
 
@@ -793,15 +793,15 @@ deriveGeneric ''EstimateFeesError
 
 instance HasDiagnostic EstimateFeesError where
     getDiagnosticKey = \case
-        EstimateFeesError _ -> "TODO"
-        EstimateFeesTimeLimitReached _ -> "TODO"
-        EstimateFeesWalletIdDecodingFailed _ -> "TODO"
+        EstimateFeesError _ -> "message"
+        EstimateFeesTimeLimitReached _ -> "timeLimitReached"
+        EstimateFeesWalletIdDecodingFailed _ -> "message"
 
 instance ToServantError EstimateFeesError where
     declareServantError = \case
-        EstimateFeesError _ -> err400 -- FIXME: Is this correct?
-        EstimateFeesTimeLimitReached _ -> err400 -- FIXME: Is this correct?
-        EstimateFeesWalletIdDecodingFailed _ -> err400 -- FIXME: Is this correct?
+        EstimateFeesError _ -> err400
+        EstimateFeesTimeLimitReached _ -> err400 -- FIXME: Timeout? 408?
+        EstimateFeesWalletIdDecodingFailed _ -> err400
 
 instance ToHttpErrorStatus EstimateFeesError
 
@@ -837,12 +837,12 @@ deriveGeneric ''RedeemAdaError
 
 instance HasDiagnostic RedeemAdaError where
     getDiagnosticKey = \case
-        RedeemAdaError _ -> "TODO"
-        RedeemAdaWalletIdDecodingFailed _ -> "TODO"
-        RedeemAdaInvalidRedemptionCode _ -> "TODO"
+        RedeemAdaError _ -> "reason"
+        RedeemAdaWalletIdDecodingFailed _ -> "message"
+        RedeemAdaInvalidRedemptionCode _ -> "invalidRedemtionCode"
 
 instance ToServantError RedeemAdaError where
-    declareServantError _ = err400 -- FIXME: Is this correct?
+    declareServantError _ = err400
 
 instance ToHttpErrorStatus RedeemAdaError
 
