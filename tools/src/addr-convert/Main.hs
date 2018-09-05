@@ -15,9 +15,9 @@ import           Text.PrettyPrint.ANSI.Leijen (Doc)
 
 import           Paths_cardano_sl (version)
 import           Pos.Core (makeRedeemAddress)
-import           Pos.Core.NetworkMagic (NetworkMagic (..), RequiresNetworkMagic (..),
-                                        makeNetworkMagic)
-import           Pos.Crypto.Configuration (ProtocolMagic (..))
+import           Pos.Core.NetworkMagic (NetworkMagic (..), makeNetworkMagic)
+import           Pos.Crypto.Configuration (ProtocolMagic (..), ProtocolMagicId (..),
+                                           RequiresNetworkMagic (..))
 import           Pos.Crypto.Signing (fromAvvmPk)
 import           Pos.Util.Util (eitherToThrow)
 
@@ -88,7 +88,9 @@ toNetworkMagic txt =
                 | pm == mainnetProtocolMagic ->
                     Left "Got mainnet's ProtocolMagic;\
                         \ please enter 'mainnet' instead"
-            Right (pm, _) -> Right (makeNetworkMagic NMMustBeJust (ProtocolMagic pm))
+            Right (ident, _) ->
+                Right (makeNetworkMagic (ProtocolMagic (ProtocolMagicId ident)
+                                        NMMustBeJust))
             Left err -> Left $ toText ("Please enter either 'mainnet', 'staging', or\
                                       \ an Int32 value: " ++ err)
 

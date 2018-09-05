@@ -9,6 +9,7 @@ import qualified Data.Set as Set
 import qualified Cardano.Wallet.Kernel as Kernel
 import qualified Cardano.Wallet.Kernel.Diffusion as Kernel
 import           Pos.Core (Coeff (..), TxSizeLinear (..))
+import           Pos.Crypto (ProtocolMagic (..), RequiresNetworkMagic (..))
 
 import           Test.Infrastructure.Generator
 import           Util.Buildable.Hspec
@@ -29,12 +30,23 @@ import qualified Wallet.Basic as Base
 -------------------------------------------------------------------------------}
 
 spec :: Spec
-spec =
+spec = do
+    runWithMagic NMMustBeNothing
+    runWithMagic NMMustBeJust
+
+runWithMagic :: RequiresNetworkMagic -> Spec
+runWithMagic rnm = do
+    pm <- (\ident -> ProtocolMagic ident rnm) <$> runIO (generate arbitrary)
+    describe ("(requiresNetworkMagic=" ++ show rnm ++ ")") $
+        specBody pm
+
+specBody :: ProtocolMagic -> Spec
+specBody pm =
     it "Compare wallet kernel to pure model" $
       forAll (genInductiveUsingModel model) $ \ind -> do
         -- TODO: remove once we have support for rollback in the kernel
         let indDontRoll = uptoFirstRollback ind
-        bracketActiveWallet $ \activeWallet -> do
+        bracketActiveWallet pm $ \activeWallet -> do
           checkEquivalent activeWallet indDontRoll
   where
     transCtxt = runTranslateNoErrors ask
@@ -66,16 +78,16 @@ spec =
 -------------------------------------------------------------------------------}
 
 -- | Initialize passive wallet in a manner suitable for the unit tests
-bracketPassiveWallet :: (Kernel.PassiveWallet -> IO a) -> IO a
-bracketPassiveWallet = Kernel.bracketPassiveWallet logMessage
+bracketPassiveWallet :: ProtocolMagic -> (Kernel.PassiveWallet -> IO a) -> IO a
+bracketPassiveWallet pm = Kernel.bracketPassiveWallet pm logMessage
   where
    -- TODO: Decide what to do with logging
     logMessage _sev txt = print txt
 
 -- | Initialize active wallet in a manner suitable for generator-based testing
-bracketActiveWallet :: (Kernel.ActiveWallet -> IO a) -> IO a
-bracketActiveWallet test =
-    bracketPassiveWallet $ \passive ->
+bracketActiveWallet :: ProtocolMagic -> (Kernel.ActiveWallet -> IO a) -> IO a
+bracketActiveWallet pm test =
+    bracketPassiveWallet pm $ \passive ->
       Kernel.bracketActiveWallet passive diffusion $ \active ->
         test active
 
