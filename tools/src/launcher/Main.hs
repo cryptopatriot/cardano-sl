@@ -84,8 +84,11 @@ import           Pos.Util (HasLens (..), directory, logException,
                      postfixLFields)
 import           Pos.Util.CompileInfo (HasCompileInfo, compileInfo,
                      withCompileInfo)
-import           Pos.Util.Wlog (logError, logInfo, logNotice, logWarning)
-import qualified Pos.Util.Wlog as Log
+import           Pos.Util.Log.LoggerConfig (defaultInteractiveConfiguration,
+                     retrieveLogFiles)
+import           Pos.Util.Wlog (LoggerNameBox (..), Severity (Debug),
+                     lcBasePath, lcLoggerTree, logError, logInfo, logNotice,
+                     logWarning, usingLoggerName)
 
 import           Pos.Tools.Launcher.Environment (substituteEnvVarsValue)
 import           Pos.Tools.Launcher.Logging (reportErrorDefault)
@@ -134,7 +137,7 @@ instance FromJSON LauncherOptions where
                 ]
 
 -- | The concrete monad where everything happens
-type M a = Log.LoggerNameBox IO a
+type M a = LoggerNameBox IO a
 
 data Executable = EWallet | ENode | EUpdater | ECertGen
 
@@ -296,17 +299,19 @@ main =
             case loNodeLogConfig of
                 Nothing -> loNodeArgs
                 Just lc -> loNodeArgs ++ ["--log-config", toText lc]
-    Log.setupLogging Nothing $
-        Log.productionB
-            & Log.lcTermSeverityOut .~ Just Log.debugPlus
-            & Log.lcLogsDirectory .~ launcherLogsPrefix
-            & Log.lcTree %~ case launcherLogsPrefix of
+    setupLogging Nothing $
+        defaultInteractiveConfiguration Debug
+            & lcBasePath .~ launcherLogsPrefix
+            & lcLoggerTree %~ case launcherLogsPrefix of
                   Nothing ->
                       identity
                   Just _  ->
-                      set Log.ltFiles [Log.HandlerWrap "launcher" Nothing] .
-                      set Log.ltSeverity (Just Log.debugPlus)
-    logException loggerName . Log.usingLoggerName loggerName $
+                    (ltHandlers %~ (\xs -> LogHandler { _lhName="node", _lhFpath=Just "node.log"
+                    , _lhBackend=FileTextBE
+                    , _lhMinSeverity=Just Debug
+                    , _lhSecurityLevel=Just PublicLogLevel} : xs)) .
+                    set ltMinSeverity Debug
+    logException loggerName . usingLoggerName loggerName $
         withConfigurations Nothing loConfiguration $ \coreConfig _ _ -> do
 
         -- Generate TLS certificates as needed
@@ -717,7 +722,7 @@ reportNodeCrash
 reportNodeCrash pm exitCode _ logConfPath reportServ = do
     logConfig <- readLoggerConfig (toString <$> logConfPath)
     let logFileNames =
-            map ((fromMaybe "" (logConfig ^. Log.lcLogsDirectory) </>) . snd) $
+            map ((fromMaybe "" (logConfig ^. lcBasePath) </>) . snd) $
             retrieveLogFiles logConfig
         -- The log files are computed purely: they're only hypothetical. They
         -- are the file names that the logger config *would* create, but they
